@@ -1,1 +1,34 @@
-# Serabii-Pokedex
+# Serebii Better UI
+
+A cleaner, faster, bilingual (中文 / English) Pokémon Pokédex.
+Built on Next.js + shadcn/ui, deployed on Vercel.
+
+## Setup history
+
+Tools / plugins used to bootstrap this project:
+
+```bash
+# shadcn/ui skill (component scaffolding & registry)
+pnpm dlx skills add shadcn/ui
+
+# Vercel plugin (deployment integration)
+npx plugins add vercel/vercel-plugin
+```
+
+## Adding components
+
+To add components to your app, run the following command:
+
+```bash
+npx shadcn@latest add button
+```
+
+This will place the ui components in the `components` directory.
+
+## Using components
+
+To use the components in your app, import them as follows:
+
+```tsx
+import { Button } from "@/components/ui/button";
+```

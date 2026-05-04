@@ -1,0 +1,78 @@
+name: Auto-update dependencies
+
+# 每周一 UTC 09:00 (≈ 北京 17:00) 自动检查并升级所有依赖到最新
+# 也可以在 Actions tab 手动触发 (workflow_dispatch)
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Install current dependencies (frozen)
+        run: pnpm install --frozen-lockfile
+
+      - name: Bump all dependencies to latest
+        run: pnpm up --latest
+
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(deps): bump all dependencies to latest"
+          branch: chore/auto-update-deps
+          delete-branch: true
+          title: "⬆️ Auto-update all dependencies"
+          body: |
+            ## What
+
+            Weekly automated upgrade of **all** npm dependencies to their latest versions
+            (including major versions).
+
+            ## What was checked
+
+            - ✅ `pnpm typecheck` passed
+            - ✅ `pnpm build` passed
+
+            ## What you should do
+
+            1. Skim the diff for any major version bumps and check release notes
+            2. Pull the branch locally and run `pnpm dev` to spot any visual / runtime regressions
+            3. Merge if happy
+
+            > ⚠️ **shadcn/ui components are NOT updated by this workflow** — they live as
+            > local source in `components/ui/*`. Update them manually with
+            > `pnpm dlx shadcn@latest add <name> --diff` and review the upstream changes.
+
+            ---
+            _This PR was opened automatically by `.github/workflows/auto-update-deps.yml`._
+          labels: |
+            dependencies
+            automated
