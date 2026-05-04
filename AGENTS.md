@@ -17,11 +17,36 @@
 
 > 具体依赖版本以 `package.json` 为准。
 
-## 数据来源
+## 数据来源（Serebii-first）
 
-- **底座**: [PokeAPI](https://pokeapi.co/) — build-time 拉取，输出静态 JSON
-- **补充**: serebii.net 选择性抓取（仅在 PokeAPI 缺失时）
-- **私货**: 本仓库内的 MDX 笔记
+主数据源切换到 Serebii — 整个项目以 [serebii.net](https://www.serebii.net/) 为 source of truth：
+
+| 层 | 来源 | 用途 |
+|---|---|---|
+| **主** | serebii.net 抓 + 解析（cheerio）| 99% 的内容（图鉴、技能、地点、事件等）|
+| **辅** | [PokeAPI](https://pokeapi.co/) | Serebii 没有的（统一 sprite、跨语言名称）|
+| **私货** | 本仓库 MDX 笔记 | 个人 tier 评分、实战心得 |
+
+### Serebii 抓取约定
+
+- 通用 wrapper：`lib/serebii/client.ts`（`fetchSerebiiHtml(path, { revalidate })`）
+- 每个 endpoint 单独 module：`lib/serebii/{endpoint}.ts`
+- 缓存策略：默认 ISR 24 小时，单页面可覆盖
+- User-Agent 表明身份：`SerebiiBetterUI/0.1 (... non-commercial fan project)`
+- 解析用 cheerio（不用 regex，更稳健）
+
+### 代码组织
+
+```
+lib/
+  serebii/                 # 跟数据源相关（fetcher + parser）
+    client.ts              # 通用 fetch wrapper
+    pokopia.ts             # Pokopia available pokemon parser
+    ...                    # 以后加 sv.ts, anime.ts 等
+  pokemon/                 # franchise-level types & domain logic
+    pokopia/types.ts       # PokopiaPokemon, PokopiaSpecialty
+    sv/types.ts            # ...
+```
 
 ## 项目状态
 
@@ -38,12 +63,20 @@
 | 2026-05-01 | shadcn style: `radix-lyra` | 盒子型、锐利、配 mono 字体（boxy & sharp） |
 | 2026-05-01 | dashboard 作为 root `/` | 取消 `/dashboard` 子路径 |
 | 2026-05-01 | TooltipProvider 加在 root layout | 避免 sidebar 用 tooltip 时报错 |
-| 2026-05-01 | 配色：Emerald 沉稳派（方案 A） | primary=emerald-600 / accent=lime-400 / secondary=emerald-100 / muted=emerald-50 / chart=emerald+lime+teal+green |
+| 2026-05-01 | 配色：Lime（Serebii heritage） | primary=lime-700 (≈Serebii box `#507C36`) / accent=lime-500 (≈Serebii title `#7ACC3B`) / accent-fg=lime-950 (≈Serebii title text `#104C09`) / chart 全 lime 系。背景中性（白/黑灰）、文字+box=lime |
 | 2026-05-01 | Sidebar 两组：Quick Links + Games | 都不折叠。Quick Links: Home/Search/Favorites；Games: Pokopia (NEW) |
 | 2026-05-01 | 删除未用 nav 组件 | nav-main / nav-secondary / nav-documents 删除，新增通用 nav-group |
 | 2026-05-01 | Brand logo: pokemon.com 经典 wordmark | `assets.pokemon.com/.../logo-pokemon-79x45.png`，favicon 用 pokemon.com 的 ico（已下载到本地 `app/favicon.ico`） |
 | 2026-05-01 | Pokopia menu icon: pokopia.pokemon.com hero logo | `pokopia.pokemon.com/.../logo-pokopia.png` |
 | 2026-05-01 | 修 SidebarMenuButton hydration warning | 加 `suppressHydrationWarning`（Radix Tooltip + React 19 + Next 16 已知 useId 不一致） |
+| 2026-05-01 | URL 架构：franchise 即顶层 namespace | 为未来扩展（FGO / Genshin 等）做准备。所有 Pokemon 内容走 `/pokemon/...`，未来 FGO 走 `/fgo/...`。每个 franchise 数据模型独立，代码也按 franchise 分文件夹（`app/pokemon/`、`lib/pokemon/`、`content/notes/pokemon/`）。Pokopia 是 Pokemon 旗下游戏 → `/pokemon/pokopia` |
+| 2026-05-01 | 数据策略转向：Serebii 为主 | 之前规划是 PokeAPI + Serebii 混合。现在改成 Serebii 主数据源（用户偏好），PokeAPI 留作后备。每个数据 endpoint 走自己 module（如 `lib/serebii/pokopia.ts` 解析 availablepokemon.shtml）|
+| 2026-05-01 | "实时同步" = ISR + revalidate 86400s | Server component 直接 fetch Serebii，Next.js 在背景静默 revalidate（24h）。无需 cron / DB / KV，零基础设施。可以以后升级到 Vercel Cron + KV 实现"小时级"同步 |
+| 2026-05-01 | Sidebar shell 上提到 root layout | `SidebarProvider` + `AppSidebar` + `SidebarInset` 现在在 `app/layout.tsx` 全局生效。`SiteHeader` 改成接受 `title` prop，每个 page 自己渲染 SiteHeader + 内容 |
+| 2026-05-01 | 第一个数据页：`/pokemon/pokopia/pokedex` | 拉 serebii.net availablepokemon.shtml → cheerio 解析 → 渲染卡片网格。卡片含 sprite + 编号 + 名字 + Specialty badges。整页 server-rendered + 24h ISR |
+| 2026-05-01 | Lyra 全站锐角 | `--radius: 0`（一处改全站 sharp corners） |
+| 2026-05-01 | 自定义 design token：`--tile`、`--text-3xs` | `--tile`/`--tile-foreground` 给 Pokemon tile 用的中性灰；`--text-3xs: 0.65rem` 给紧凑 badge 用。两者都按 shadcn 推荐方式注册到 `@theme inline` |
+| 2026-05-01 | 严格遵守 shadcn skill 全检 | `<Link>` 用于内部跳转；pokedex-card 用 Card composition（Header/Content/Footer）；自定义字号走 design token；icon 加 `data-icon` |
 
 ## 给代理的工作约定（基于 shadcn skill）
 

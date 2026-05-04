@@ -50,3 +50,11 @@ next-env.d.ts
 /.vscode/
 *.swp
 *.swo
+
+# Mac OS Finder duplicate-name artifacts (e.g. "README 2.md")
+* 2.*
+*\ 2.md
+*\ 2.json
+
+# Claude Code plugin exports (跟这个项目无关，分开放)
+*.plugin

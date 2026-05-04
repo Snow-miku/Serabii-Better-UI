@@ -36,6 +36,11 @@
     --color-popover: var(--popover);
     --color-card-foreground: var(--card-foreground);
     --color-card: var(--card);
+    --color-tile-foreground: var(--tile-foreground);
+    --color-tile: var(--tile);
+    /* 比 text-xs (0.75rem) 还小一档，专给紧凑场景（如 tile 卡里的 specialty badge）*/
+    --text-3xs: 0.65rem;
+    --text-3xs--line-height: 1rem;
     --color-foreground: var(--foreground);
     --color-background: var(--background);
     --radius-sm: calc(var(--radius) * 0.6);
@@ -48,82 +53,92 @@
 }
 
 /*
- * Theme: Emerald 沉稳派
- * - primary  → emerald-600  (主按钮、active sidebar、品牌色)
- * - accent   → lime-400     (徽章、收藏、hover 高光)
- * - secondary→ emerald-100  (次按钮、信息标签底)
- * - muted    → emerald-50   (卡片底色、表头)
- * - chart    → emerald / lime / teal / green 组合
+ * Theme: Lime (Serebii heritage)
+ *
+ * 致敬 Serebii 经典草系绿配色：
+ *   - primary  → lime-700   ≈ Serebii box bg  #507C36
+ *   - accent   → lime-500   ≈ Serebii title bg #7ACC3B
+ *   - text on accent (lime-950) ≈ Serebii title text #104C09
+ *
+ * 设计原则：
+ *   - 背景（page / sidebar）保持中性（白 / 黑灰），不染色
+ *   - 文字 (--foreground) 用 lime 色调
+ *   - "盒子"（card / popover）才是 lime 染色，让卡片在中性背景上凸出
+ *   - primary / accent / chart 等品牌色全 lime 系
  *
  * 改色只改这里，组件内部全部用 bg-primary / text-muted-foreground 等语义 token。
  */
 :root {
-    --background: oklch(1 0 0);                                 /* white */
-    --foreground: oklch(0.262 0.051 172.552);                   /* emerald-950 */
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.262 0.051 172.552);              /* emerald-950 */
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.262 0.051 172.552);           /* emerald-950 */
-    --primary: oklch(0.596 0.145 163.225);                      /* emerald-600 */
+    --background: oklch(1 0 0);                                 /* neutral white */
+    --foreground: oklch(0.274 0.072 132.109);                   /* lime-950 (green text) */
+    --card: oklch(0.986 0.031 120.757);                         /* lime-50 (green box) */
+    --card-foreground: oklch(0.274 0.072 132.109);              /* lime-950 */
+    --popover: oklch(0.986 0.031 120.757);                      /* lime-50 (green box) */
+    --popover-foreground: oklch(0.274 0.072 132.109);           /* lime-950 */
+    --tile: oklch(0.96 0 0);                                    /* neutral light gray (Pokemon tile bg) */
+    --tile-foreground: oklch(0.274 0.072 132.109);              /* lime-950 (green text on tile) */
+    --primary: oklch(0.532 0.157 131.589);                      /* lime-700 ≈ Serebii box bg */
     --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.95 0.052 163.051);                     /* emerald-100 */
-    --secondary-foreground: oklch(0.378 0.077 168.94);          /* emerald-900 */
-    --muted: oklch(0.979 0.021 166.113);                        /* emerald-50 */
-    --muted-foreground: oklch(0.508 0.118 165.612);             /* emerald-700 */
-    --accent: oklch(0.841 0.238 128.85);                        /* lime-400 */
-    --accent-foreground: oklch(0.262 0.051 172.552);            /* emerald-950 (高对比) */
+    --secondary: oklch(0.967 0.067 122.328);                    /* lime-100 */
+    --secondary-foreground: oklch(0.405 0.101 131.063);         /* lime-900 */
+    --muted: oklch(0.986 0.031 120.757);                        /* lime-50 */
+    --muted-foreground: oklch(0.532 0.157 131.589);             /* lime-700 */
+    --accent: oklch(0.768 0.233 130.85);                        /* lime-500 ≈ Serebii title bg */
+    --accent-foreground: oklch(0.274 0.072 132.109);            /* lime-950 ≈ Serebii title text */
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.95 0.052 163.051 / 60%);                  /* emerald-100 @ 60% */
-    --input: oklch(0.95 0.052 163.051 / 60%);
-    --ring: oklch(0.696 0.17 162.48);                           /* emerald-500 */
-    --chart-1: oklch(0.696 0.17 162.48);                        /* emerald-500 */
-    --chart-2: oklch(0.768 0.233 130.85);                       /* lime-500 */
-    --chart-3: oklch(0.704 0.14 182.503);                       /* teal-500 */
-    --chart-4: oklch(0.723 0.219 149.579);                      /* green-500 */
-    --chart-5: oklch(0.378 0.077 168.94);                       /* emerald-900 */
-    --radius: 0.625rem;
-    --sidebar: oklch(0.979 0.021 166.113);                      /* emerald-50 */
-    --sidebar-foreground: oklch(0.378 0.077 168.94);            /* emerald-900 */
-    --sidebar-primary: oklch(0.596 0.145 163.225);              /* emerald-600 active */
+    --border: oklch(0.967 0.067 122.328 / 60%);                 /* lime-100 @ 60% */
+    --input: oklch(0.967 0.067 122.328 / 60%);
+    --ring: oklch(0.768 0.233 130.85);                          /* lime-500 */
+    --chart-1: oklch(0.768 0.233 130.85);                       /* lime-500 */
+    --chart-2: oklch(0.532 0.157 131.589);                      /* lime-700 */
+    --chart-3: oklch(0.897 0.196 126.665);                      /* lime-300 */
+    --chart-4: oklch(0.405 0.101 131.063);                      /* lime-900 */
+    --chart-5: oklch(0.967 0.067 122.328);                      /* lime-100 */
+    --radius: 0;                                                /* Lyra style: sharp / boxy corners */
+    --sidebar: oklch(0.985 0 0);                                /* neutral very light gray (chrome bg) */
+    --sidebar-foreground: oklch(0.405 0.101 131.063);           /* lime-900 (green text) */
+    --sidebar-primary: oklch(0.532 0.157 131.589);              /* lime-700 active */
     --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.95 0.052 163.051);                /* emerald-100 hover */
-    --sidebar-accent-foreground: oklch(0.378 0.077 168.94);     /* emerald-900 */
-    --sidebar-border: oklch(0.95 0.052 163.051 / 60%);
-    --sidebar-ring: oklch(0.696 0.17 162.48);                   /* emerald-500 */
+    --sidebar-accent: oklch(0.967 0.067 122.328);               /* lime-100 hover */
+    --sidebar-accent-foreground: oklch(0.405 0.101 131.063);    /* lime-900 */
+    --sidebar-border: oklch(0.922 0 0);                         /* neutral light border */
+    --sidebar-ring: oklch(0.768 0.233 130.85);                  /* lime-500 */
 }
 
 .dark {
-    --background: oklch(0.18 0.02 168.94);                      /* near-black, 微 emerald 色调 */
-    --foreground: oklch(0.95 0.052 163.051);                    /* emerald-100 */
-    --card: oklch(0.225 0.025 168.94);
-    --card-foreground: oklch(0.95 0.052 163.051);
-    --popover: oklch(0.225 0.025 168.94);
-    --popover-foreground: oklch(0.95 0.052 163.051);
-    --primary: oklch(0.765 0.177 163.223);                      /* emerald-400 (暗模式提亮) */
-    --primary-foreground: oklch(0.225 0.025 168.94);
-    --secondary: oklch(0.378 0.077 168.94);                     /* emerald-900 */
-    --secondary-foreground: oklch(0.95 0.052 163.051);          /* emerald-100 */
-    --muted: oklch(0.262 0.051 172.552);                        /* emerald-950 */
-    --muted-foreground: oklch(0.765 0.177 163.223);             /* emerald-400 */
-    --accent: oklch(0.841 0.238 128.85);                        /* lime-400 */
-    --accent-foreground: oklch(0.262 0.051 172.552);            /* emerald-950 */
+    --background: oklch(0.145 0 0);                             /* neutral dark gray (no green) */
+    --foreground: oklch(0.967 0.067 122.328);                   /* lime-100 (green text) */
+    --card: oklch(0.274 0.072 132.109);                         /* lime-950 (green box, visible on neutral bg) */
+    --card-foreground: oklch(0.967 0.067 122.328);
+    --popover: oklch(0.274 0.072 132.109);                      /* lime-950 (green box) */
+    --popover-foreground: oklch(0.967 0.067 122.328);
+    --tile: oklch(0.225 0 0);                                   /* neutral dark gray (Pokemon tile bg, lighter than page bg) */
+    --tile-foreground: oklch(0.967 0.067 122.328);              /* lime-100 (green text on tile) */
+    --primary: oklch(0.768 0.233 130.85);                       /* lime-500 (暗模式提亮，对应 Serebii title bg) */
+    --primary-foreground: oklch(0.274 0.072 132.109);           /* lime-950 (dark text on bright button) */
+    --secondary: oklch(0.405 0.101 131.063);                    /* lime-900 */
+    --secondary-foreground: oklch(0.967 0.067 122.328);         /* lime-100 */
+    --muted: oklch(0.274 0.072 132.109);                        /* lime-950 */
+    --muted-foreground: oklch(0.841 0.238 128.85);              /* lime-400 */
+    --accent: oklch(0.841 0.238 128.85);                        /* lime-400 (slightly punchier in dark) */
+    --accent-foreground: oklch(0.274 0.072 132.109);            /* lime-950 */
     --destructive: oklch(0.704 0.191 22.216);
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.765 0.177 163.223);                         /* emerald-400 */
-    --chart-1: oklch(0.765 0.177 163.223);                      /* emerald-400 */
-    --chart-2: oklch(0.841 0.238 128.85);                       /* lime-400 */
-    --chart-3: oklch(0.777 0.152 181.912);                      /* teal-300 */
-    --chart-4: oklch(0.723 0.219 149.579);                      /* green-500 */
-    --chart-5: oklch(0.95 0.052 163.051);                       /* emerald-100 */
-    --sidebar: oklch(0.225 0.025 168.94);
-    --sidebar-foreground: oklch(0.95 0.052 163.051);            /* emerald-100 */
-    --sidebar-primary: oklch(0.696 0.17 162.48);                /* emerald-500 active */
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.378 0.077 168.94);                /* emerald-900 hover */
-    --sidebar-accent-foreground: oklch(0.95 0.052 163.051);
+    --ring: oklch(0.841 0.238 128.85);                          /* lime-400 */
+    --chart-1: oklch(0.841 0.238 128.85);                       /* lime-400 */
+    --chart-2: oklch(0.532 0.157 131.589);                      /* lime-700 */
+    --chart-3: oklch(0.897 0.196 126.665);                      /* lime-300 */
+    --chart-4: oklch(0.405 0.101 131.063);                      /* lime-900 */
+    --chart-5: oklch(0.967 0.067 122.328);                      /* lime-100 */
+    --sidebar: oklch(0.205 0 0);                                /* neutral dark gray (chrome bg) */
+    --sidebar-foreground: oklch(0.967 0.067 122.328);           /* lime-100 (green text) */
+    --sidebar-primary: oklch(0.768 0.233 130.85);               /* lime-500 active */
+    --sidebar-primary-foreground: oklch(0.274 0.072 132.109);   /* lime-950 dark text on bright bg */
+    --sidebar-accent: oklch(0.405 0.101 131.063);               /* lime-900 hover */
+    --sidebar-accent-foreground: oklch(0.967 0.067 122.328);
     --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.696 0.17 162.48);
+    --sidebar-ring: oklch(0.768 0.233 130.85);                  /* lime-500 */
 }
 
 @layer base {

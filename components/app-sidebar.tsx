@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { HomeIcon, SearchIcon, StarIcon } from "lucide-react"
 
 import { NavGroup, type NavGroupItem } from "@/components/nav-group"
@@ -39,7 +40,7 @@ const data: {
   games: [
     {
       title: "Pokopia",
-      url: "/games/pokopia",
+      url: "/pokemon/pokopia",
       icon: (
         <Image
           src={POKOPIA_GAME_LOGO}
@@ -50,6 +51,10 @@ const data: {
         />
       ),
       badge: "NEW",
+      defaultOpen: true,
+      children: [
+        { title: "Pokédex", url: "/pokemon/pokopia/pokedex" },
+      ],
     },
   ],
 }
@@ -64,7 +69,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
-              <a href="/">
+              <Link href="/">
                 <Image
                   src={SITE_BRAND_LOGO}
                   alt="Better Pokédex"
@@ -73,7 +78,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   priority
                   unoptimized
                 />
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

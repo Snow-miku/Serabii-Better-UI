@@ -10,6 +10,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "assets.pokemon.com",
       },
+      {
+        protocol: "https",
+        hostname: "www.serebii.net",
+      },
+      {
+        protocol: "https",
+        hostname: "serebii.net",
+      },
     ],
   },
 }
