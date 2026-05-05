@@ -1,4 +1,5 @@
 import Image from "next/image"
+import Link from "next/link"
 
 import { Badge } from "@/components/ui/badge"
 import {
@@ -9,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { pokopiaPokemonHref } from "@/lib/pokemon/pokopia/links"
 import type { PokopiaPokemon } from "@/lib/pokemon/pokopia/types"
 import { cn } from "@/lib/utils"
 
@@ -35,12 +37,10 @@ export function PokopiaPokedexCard({
   const paddedNumber = String(pokemon.pokopiaNumber).padStart(3, "0")
 
   return (
-    <a
-      href={pokemon.detailUrl}
-      target="_blank"
-      rel="noreferrer"
+    <Link
+      href={pokopiaPokemonHref(pokemon.slug)}
       className="group block focus-visible:outline-none"
-      aria-label={`${pokemon.name} on Serebii`}
+      aria-label={`${pokemon.name} 详情`}
     >
       <Card
         size="sm"
@@ -108,6 +108,6 @@ export function PokopiaPokedexCard({
           ) : null}
         </CardFooter>
       </Card>
-    </a>
+    </Link>
   )
 }

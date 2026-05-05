@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowRightIcon, BookOpenTextIcon } from "lucide-react"
+import { ArrowRightIcon, BookOpenTextIcon, SparklesIcon } from "lucide-react"
 
 import { SiteHeader } from "@/components/site-header"
 import {
@@ -22,7 +22,14 @@ const pokopiaSubpages = [
     icon: BookOpenTextIcon,
     available: true,
   },
-  // 占位：以后加 locations / specialties / events 等
+  {
+    title: "Specialties",
+    description: "32+ 种特长机制 — 用法、效果、有谁会",
+    href: "/pokemon/pokopia/specialties",
+    icon: SparklesIcon,
+    available: true,
+  },
+  // 占位：以后加 favorites / items / habitats / locations
 ] as const
 
 export default function PokopiaHubPage() {

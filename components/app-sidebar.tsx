@@ -54,6 +54,7 @@ const data: {
       defaultOpen: true,
       children: [
         { title: "Pokédex", url: "/pokemon/pokopia/pokedex" },
+        { title: "Specialties", url: "/pokemon/pokopia/specialties" },
       ],
     },
   ],

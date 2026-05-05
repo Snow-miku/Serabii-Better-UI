@@ -56,11 +56,21 @@ export async function fetchSerebiiHtml(
 
 /**
  * 把 Serebii 相对路径补成完整 URL。
- * 用在解析 HTML 时拿到 `/pokemonpokopia/...` 这种相对路径。
+ *
+ * 用 WHATWG URL API 处理：
+ *   - 绝对 URL（http:// / https://）→ 原样
+ *   - 协议相对（//cdn.example.com/x.png）→ 加上 https:
+ *   - 站内绝对（/pokemonpokopia/x.png）→ 拼到 SEREBII_BASE
+ *   - 站内相对（pokedex/x.shtml）→ 相对 fromPath 解析
+ *
+ * fromPath：当前 HTML 所在的页面路径（如 `/pokemonpokopia/specialty.shtml`），
+ * 用于解析相对路径。默认 `/`（适用于站内绝对路径场景）。
  */
-export function absolutizeSerebiiUrl(maybeRelative: string): string {
+export function absolutizeSerebiiUrl(maybeRelative: string, fromPath = "/"): string {
   if (!maybeRelative) return ""
-  if (maybeRelative.startsWith("http")) return maybeRelative
-  if (maybeRelative.startsWith("//")) return `https:${maybeRelative}`
-  return `${SEREBII_BASE}${maybeRelative.startsWith("/") ? "" : "/"}${maybeRelative}`
+  try {
+    return new URL(maybeRelative, `${SEREBII_BASE}${fromPath}`).href
+  } catch {
+    return maybeRelative
+  }
 }

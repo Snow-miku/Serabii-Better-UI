@@ -10,6 +10,7 @@ import type {
   PokopiaPokemon,
   PokopiaSpecialty,
 } from "@/lib/pokemon/pokopia/types"
+import { slugFromSerebiiUrl } from "@/lib/pokemon/pokopia/links"
 import { absolutizeSerebiiUrl, fetchSerebiiHtml } from "./client"
 
 const POKOPIA_AVAILABLE_PATH = "/pokemonpokopia/availablepokemon.shtml"
@@ -126,6 +127,7 @@ function parseSpecialtiesFromCell(
 
     byUrl.set(detailUrl, {
       name: text || "",
+      slug: slugFromSerebiiUrl(href, "specialty/"),
       iconUrl: iconSrc ? absolutizeSerebiiUrl(iconSrc) : "",
       detailUrl,
     })
