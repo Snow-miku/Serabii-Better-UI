@@ -167,10 +167,13 @@ export interface PokopiaLocation {
 /** Pokopia 图鉴里的一只宝可梦 */
 export interface PokopiaPokemon {
   /**
-   * Pokopia 图鉴编号 (1–102 currently)
+   * Pokopia 图鉴编号
    *
-   * 注意：同一编号可能有多个变体（如 #059 Shellos / Shellos East Sea；
-   * #079 Pikachu / Peakychu）。区分用 slug。
+   * 注意：
+   *  - 同一编号可能有多个变体（如 #059 Shellos / Shellos East Sea；
+   *    #079 Pikachu / Peakychu）。区分用 slug。
+   *  - Event pokemon 有自己的独立编号空间 #001 起 — 跟 main pokedex 编号会重号，
+   *    必须用 isEvent 区分。
    */
   pokopiaNumber: number
   /** 宝可梦显示名（如 "Bulbasaur", "Shellos East Sea"）*/
@@ -183,4 +186,6 @@ export interface PokopiaPokemon {
   detailUrl: string
   /** 宝可梦的特长，1–4 个 */
   specialties: PokopiaSpecialty[]
+  /** 是否来自 Event Pokédex（serebii eventpokedex.shtml）*/
+  isEvent?: boolean
 }

@@ -14,15 +14,27 @@ import { slugFromSerebiiUrl } from "@/lib/pokemon/pokopia/links"
 import { absolutizeSerebiiUrl, fetchSerebiiHtml } from "./client"
 
 const POKOPIA_AVAILABLE_PATH = "/pokemonpokopia/availablepokemon.shtml"
+const POKOPIA_EVENT_PATH = "/pokemonpokopia/eventpokedex.shtml"
 
 /**
- * 抓取并解析 Pokopia "Available Pokémon" 列表。
+ * 抓取并解析 Pokopia "Available Pokémon" 列表（主图鉴）。
  *
  * Server-only — 内部用 fetch + Next.js ISR 缓存，不要在 client 调用。
  */
 export async function getPokopiaAvailablePokemon(): Promise<PokopiaPokemon[]> {
   const html = await fetchSerebiiHtml(POKOPIA_AVAILABLE_PATH)
   return parsePokopiaAvailableHtml(html)
+}
+
+/**
+ * 抓取并解析 Pokopia Event 图鉴（event 限定 pokemon）。
+ *
+ * Event pokemon 有独立编号 #001 起，所以会跟主图鉴重号 — 调用方需要用 slug
+ * 或 isEvent 区分。表结构跟 main pokedex 一样，复用同一个 parser。
+ */
+export async function getPokopiaEventPokemon(): Promise<PokopiaPokemon[]> {
+  const html = await fetchSerebiiHtml(POKOPIA_EVENT_PATH)
+  return parsePokopiaAvailableHtml(html).map((p) => ({ ...p, isEvent: true }))
 }
 
 /**

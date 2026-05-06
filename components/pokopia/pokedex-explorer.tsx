@@ -5,6 +5,7 @@ import Image from "next/image"
 import { ArrowDownIcon, ArrowUpIcon, SearchIcon } from "lucide-react"
 
 import { PokopiaPokedexCard } from "@/components/pokopia/pokedex-card"
+import { Badge } from "@/components/ui/badge"
 import {
   Empty,
   EmptyDescription,
@@ -66,7 +67,7 @@ export function PokopiaPokedexExplorer({
     )
   }, [pokemon])
 
-  const filteredAndSorted = React.useMemo(() => {
+  const { mainList, eventList } = React.useMemo(() => {
     const q = query.trim().toLowerCase()
     const filtered = pokemon.filter((p) => {
       if (q && !p.name.toLowerCase().includes(q)) return false
@@ -81,12 +82,19 @@ export function PokopiaPokedexExplorer({
       return true
     })
 
-    return [...filtered].sort((a, b) =>
+    const sorted = [...filtered].sort((a, b) =>
       sortDirection === "asc"
         ? a.pokopiaNumber - b.pokopiaNumber
         : b.pokopiaNumber - a.pokopiaNumber
     )
+
+    return {
+      mainList: sorted.filter((p) => !p.isEvent),
+      eventList: sorted.filter((p) => p.isEvent),
+    }
   }, [pokemon, query, activeSpecialties, specialtyMode, sortDirection])
+
+  const totalFiltered = mainList.length + eventList.length
 
   // ToggleGroup type="single" 不允许 value 为 ""，需保护避免取消选择
   const handleModeChange = React.useCallback((value: string) => {
@@ -166,9 +174,9 @@ export function PokopiaPokedexExplorer({
       {/* 计数 + 排序 */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-muted-foreground text-sm">
-          {filteredAndSorted.length === pokemon.length
+          {totalFiltered === pokemon.length
             ? `${pokemon.length} 只`
-            : `${filteredAndSorted.length} / ${pokemon.length} 只`}
+            : `${totalFiltered} / ${pokemon.length} 只`}
         </p>
 
         <ToggleGroup
@@ -188,11 +196,28 @@ export function PokopiaPokedexExplorer({
       </div>
 
       {/* 结果网格 / Empty */}
-      {filteredAndSorted.length > 0 ? (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-6">
-          {filteredAndSorted.map((p) => (
-            <PokopiaPokedexCard key={p.slug} pokemon={p} />
-          ))}
+      {totalFiltered > 0 ? (
+        <div className="flex flex-col gap-8">
+          {mainList.length > 0 ? (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-6">
+              {mainList.map((p) => (
+                <PokopiaPokedexCard key={p.slug} pokemon={p} />
+              ))}
+            </div>
+          ) : null}
+          {eventList.length > 0 ? (
+            <section className="flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-semibold">Event Pokémon</h2>
+                <Badge variant="secondary">{eventList.length}</Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-6">
+                {eventList.map((p) => (
+                  <PokopiaPokedexCard key={`event-${p.slug}`} pokemon={p} />
+                ))}
+              </div>
+            </section>
+          ) : null}
         </div>
       ) : (
         <Empty>

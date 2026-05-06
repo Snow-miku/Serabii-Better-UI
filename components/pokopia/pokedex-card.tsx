@@ -58,8 +58,18 @@ export function PokopiaPokedexCard({
         )}
       >
         <CardHeader>
-          <CardDescription className="text-3xs text-right font-mono">
-            #{paddedNumber}
+          <CardDescription className="text-3xs flex items-center justify-between font-mono">
+            <span>
+              {pokemon.isEvent ? (
+                <Badge
+                  variant="outline"
+                  className="text-3xs border-accent text-accent px-1 py-0 font-sans"
+                >
+                  Event
+                </Badge>
+              ) : null}
+            </span>
+            <span>#{paddedNumber}</span>
           </CardDescription>
         </CardHeader>
 

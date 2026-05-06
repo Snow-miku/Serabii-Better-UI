@@ -1,6 +1,9 @@
 import { PokopiaPokedexExplorer } from "@/components/pokopia/pokedex-explorer"
 import { SiteHeader } from "@/components/site-header"
-import { getPokopiaAvailablePokemon } from "@/lib/serebii/pokopia"
+import {
+  getPokopiaAvailablePokemon,
+  getPokopiaEventPokemon,
+} from "@/lib/serebii/pokopia"
 
 export const metadata = {
   title: "Pokopia Pokédex · Better Pokédex",
@@ -15,7 +18,15 @@ export const metadata = {
 export const revalidate = 86400
 
 export default async function PokopiaPokedexPage() {
-  const pokemon = await getPokopiaAvailablePokemon()
+  // 并发拉主图鉴 + event 图鉴
+  const [main, event] = await Promise.all([
+    getPokopiaAvailablePokemon(),
+    getPokopiaEventPokemon(),
+  ])
+  const all = [...main, ...event]
+
+  const uniqueNumbers = new Set(main.map((p) => p.pokopiaNumber)).size
+  const formsCount = main.length - uniqueNumbers
 
   return (
     <>
@@ -23,11 +34,11 @@ export default async function PokopiaPokedexPage() {
 
       <div className="@container/main flex flex-1 flex-col gap-6 px-4 py-6 lg:px-6">
         <header className="flex flex-col gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Available Pokémon
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Pokédex</h1>
           <p className="text-muted-foreground text-sm">
-            数据来自{" "}
+            {uniqueNumbers} 只
+            {formsCount > 0 ? `（含 ${formsCount} 个变种 form）` : null}
+            {event.length > 0 ? ` · ${event.length} 只 event` : null} · 数据来自{" "}
             <a
               href="https://www.serebii.net/pokemonpokopia/availablepokemon.shtml"
               target="_blank"
@@ -40,7 +51,7 @@ export default async function PokopiaPokedexPage() {
           </p>
         </header>
 
-        <PokopiaPokedexExplorer pokemon={pokemon} />
+        <PokopiaPokedexExplorer pokemon={all} />
       </div>
     </>
   )
