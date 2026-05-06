@@ -55,6 +55,10 @@ const data: {
       children: [
         { title: "Pokédex", url: "/pokemon/pokopia/pokedex" },
         { title: "Specialties", url: "/pokemon/pokopia/specialties" },
+        { title: "Favorites", url: "/pokemon/pokopia/favorites" },
+        { title: "Items", url: "/pokemon/pokopia/items" },
+        { title: "Habitats", url: "/pokemon/pokopia/habitats" },
+        { title: "Locations", url: "/pokemon/pokopia/locations" },
       ],
     },
   ],

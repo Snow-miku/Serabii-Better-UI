@@ -69,6 +69,101 @@ export interface PokopiaPokemonDetail extends PokopiaPokemon {
   favorites: PokopiaFavoriteRef[]
 }
 
+// ─────────────────────────────────────────────────────────────
+// Favorites（Pokemon 喜欢的对象类别 — Lots of fire / Soft stuff 等）
+// ─────────────────────────────────────────────────────────────
+
+export interface PokopiaFavorite {
+  name: string
+  slug: string
+  detailUrl: string
+}
+
+/** Favorite 详情页里 items 表的一条 — 比通用 PokopiaItem 简化（只有 4 列） */
+export interface PokopiaFavoriteItemRef {
+  name: string
+  slug: string
+  iconUrl: string
+  description: string
+  /** Decoration / Toy / Relaxation 等 tag */
+  tag: string
+}
+
+/** Favorite 详情页：包含的 items + 喜欢这个的 Pokemon slugs */
+export interface PokopiaFavoriteDetail extends PokopiaFavorite {
+  items: PokopiaFavoriteItemRef[]
+  /** Pokemon slugs（可拿 slug 跟 getPokopiaAvailablePokemon() 里的 entry 对上）*/
+  pokemonSlugs: string[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// Items（Pokopia 物品 — 木材 / 蜂蜜 / 花朵 等）
+// ─────────────────────────────────────────────────────────────
+
+export interface PokopiaItemLocationRef {
+  name: string
+  slug: string
+  detailUrl: string
+  /** 标注 (如 "Natural" / "Around trees" / "Destroy boulders") */
+  note: string
+}
+
+export interface PokopiaItem {
+  name: string
+  slug: string
+  iconUrl: string
+  detailUrl: string
+  description: string
+  /** 物品分类（Materials / Food / etc.）— 来自页面的 section heading */
+  category: string
+  /** Tag 列（一般空，但 Serebii 留了这一列）*/
+  tag: string
+  /** 在哪些 location / dream island 出现 */
+  locations: PokopiaItemLocationRef[]
+}
+
+/** Item 详情页：list 数据 + 详情页特有字段 */
+export interface PokopiaItemDetail extends PokopiaItem {
+  flavorText: string
+  /** Trade Value (例 "Standard 100 / Favorite 150") — 留作原文 */
+  tradeValue: string
+  /** "Favorite Categories" — 这个 item 属于哪些 favorite（反向链）*/
+  favoriteCategories: PokopiaEntityRef[]
+}
+
+/** Habitat 详情：list 数据 + 住户 Pokemon slugs */
+export interface PokopiaHabitatDetail extends PokopiaHabitat {
+  flavorText: string
+  /** 该栖息地里能找到的 Pokemon slugs */
+  pokemonSlugs: string[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// Habitats（具体栖息地 — Tall Grass / Bench with greenery 等）
+// ─────────────────────────────────────────────────────────────
+
+export interface PokopiaHabitat {
+  habitatNumber: number
+  name: string
+  slug: string
+  iconUrl: string
+  detailUrl: string
+  description: string
+  /** "Habitats (Event)" 区的标记 */
+  isEvent: boolean
+}
+
+// ─────────────────────────────────────────────────────────────
+// Locations（地图地点 — Withered Wastelands / Palette Town 等）
+// ─────────────────────────────────────────────────────────────
+
+export interface PokopiaLocation {
+  name: string
+  slug: string
+  imageUrl: string
+  detailUrl: string
+}
+
 /** Pokopia 图鉴里的一只宝可梦 */
 export interface PokopiaPokemon {
   /**

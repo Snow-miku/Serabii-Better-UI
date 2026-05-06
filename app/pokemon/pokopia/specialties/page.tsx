@@ -1,5 +1,11 @@
+import Image from "next/image"
+import Link from "next/link"
+
+import { DataTable } from "@/components/pokopia/data-table"
 import { SiteHeader } from "@/components/site-header"
-import { SpecialtyCard } from "@/components/pokopia/specialty-card"
+import { Badge } from "@/components/ui/badge"
+import { TableCell, TableRow } from "@/components/ui/table"
+import { pokopiaSpecialtyHref } from "@/lib/pokemon/pokopia/links"
 import { getPokopiaAvailablePokemon } from "@/lib/serebii/pokopia"
 import { getPokopiaSpecialties } from "@/lib/serebii/pokopia/specialties"
 
@@ -11,14 +17,12 @@ export const metadata = {
 
 export const revalidate = 86400
 
-export default async function PokopiaSpecialtiesPage() {
-  // 并行抓 specialty 列表和 Pokemon 列表（共享 24h ISR cache，多个 page 调用不会重复抓）
+export default async function Page() {
   const [specialties, pokemon] = await Promise.all([
     getPokopiaSpecialties(),
     getPokopiaAvailablePokemon(),
   ])
 
-  // 算每个 specialty 有多少 Pokemon 拥有
   const countBySlug = new Map<string, number>()
   for (const p of pokemon) {
     for (const s of p.specialties) {
@@ -29,7 +33,6 @@ export default async function PokopiaSpecialtiesPage() {
   return (
     <>
       <SiteHeader title="Pokopia Specialties" />
-
       <div className="@container/main flex flex-1 flex-col gap-6 px-4 py-6 lg:px-6">
         <header className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold tracking-tight">Specialties</h1>
@@ -43,19 +46,56 @@ export default async function PokopiaSpecialtiesPage() {
             >
               serebii.net
             </a>
-            ，每 24 小时自动同步
           </p>
         </header>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {specialties.map((specialty) => (
-            <SpecialtyCard
-              key={specialty.slug}
-              specialty={specialty}
-              pokemonCount={countBySlug.get(specialty.slug) ?? 0}
-            />
+        <DataTable
+          columns={[
+            { width: 96, header: "图标" },
+            { width: 224, header: "特长" },
+            { width: 128, header: "Pokémon 数量" },
+            { header: "描述" },
+          ]}
+        >
+          {specialties.map((s) => (
+            <TableRow key={s.slug} className="hover:bg-muted/50">
+              <TableCell className="py-3 text-center align-middle">
+                {s.iconUrl ? (
+                  <Link
+                    href={pokopiaSpecialtyHref(s.slug)}
+                    className="hover:opacity-80 inline-block transition-opacity"
+                    aria-label={`查看 ${s.name} 详情`}
+                  >
+                    <Image
+                      src={s.iconUrl}
+                      alt=""
+                      width={48}
+                      height={48}
+                      unoptimized
+                      className="size-12 mx-auto object-contain"
+                    />
+                  </Link>
+                ) : null}
+              </TableCell>
+              <TableCell className="text-center align-middle">
+                <Link
+                  href={pokopiaSpecialtyHref(s.slug)}
+                  className="hover:text-accent font-semibold underline-offset-2 hover:underline"
+                >
+                  {s.name}
+                </Link>
+              </TableCell>
+              <TableCell className="text-center align-middle">
+                <Badge variant="secondary">
+                  {countBySlug.get(s.slug) ?? 0}
+                </Badge>
+              </TableCell>
+              <TableCell className="text-muted-foreground align-middle text-sm whitespace-normal">
+                {s.description}
+              </TableCell>
+            </TableRow>
           ))}
-        </div>
+        </DataTable>
       </div>
     </>
   )

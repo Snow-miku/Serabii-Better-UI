@@ -1,5 +1,13 @@
 import Link from "next/link"
-import { ArrowRightIcon, BookOpenTextIcon, SparklesIcon } from "lucide-react"
+import {
+  ArrowRightIcon,
+  BookOpenTextIcon,
+  HeartIcon,
+  MapIcon,
+  PackageIcon,
+  SparklesIcon,
+  TreePineIcon,
+} from "lucide-react"
 
 import { SiteHeader } from "@/components/site-header"
 import {
@@ -20,16 +28,37 @@ const pokopiaSubpages = [
     description: "Pokopia 限定可获得宝可梦及其特长（Specialty）",
     href: "/pokemon/pokopia/pokedex",
     icon: BookOpenTextIcon,
-    available: true,
   },
   {
     title: "Specialties",
     description: "32+ 种特长机制 — 用法、效果、有谁会",
     href: "/pokemon/pokopia/specialties",
     icon: SparklesIcon,
-    available: true,
   },
-  // 占位：以后加 favorites / items / habitats / locations
+  {
+    title: "Favorites",
+    description: "Pokemon 喜欢的对象类别（影响心情和加成）",
+    href: "/pokemon/pokopia/favorites",
+    icon: HeartIcon,
+  },
+  {
+    title: "Items",
+    description: "材料、食物、装饰物 — 在哪能拿到",
+    href: "/pokemon/pokopia/items",
+    icon: PackageIcon,
+  },
+  {
+    title: "Habitats",
+    description: "Pokemon 住的具体环境（草地、长椅、岩石等）",
+    href: "/pokemon/pokopia/habitats",
+    icon: TreePineIcon,
+  },
+  {
+    title: "Locations",
+    description: "地图上所有可探索的地点",
+    href: "/pokemon/pokopia/locations",
+    icon: MapIcon,
+  },
 ] as const
 
 export default function PokopiaHubPage() {
