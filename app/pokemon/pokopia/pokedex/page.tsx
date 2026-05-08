@@ -1,9 +1,6 @@
 import { PokopiaPokedexExplorer } from "@/components/pokopia/pokedex-explorer"
 import { SiteHeader } from "@/components/site-header"
-import {
-  getPokopiaAvailablePokemon,
-  getPokopiaEventPokemon,
-} from "@/lib/serebii/pokopia"
+import { getPokopiaPokemonListEnriched } from "@/lib/serebii/pokopia"
 
 export const metadata = {
   title: "Pokopia Pokédex · Better Pokédex",
@@ -18,12 +15,10 @@ export const metadata = {
 export const revalidate = 86400
 
 export default async function PokopiaPokedexPage() {
-  // 并发拉主图鉴 + event 图鉴
-  const [main, event] = await Promise.all([
-    getPokopiaAvailablePokemon(),
-    getPokopiaEventPokemon(),
-  ])
-  const all = [...main, ...event]
+  // 并发拉主图鉴 + event 图鉴 + 每只详情（idealHabitat / favorites）
+  const all = await getPokopiaPokemonListEnriched()
+  const main = all.filter((p) => !p.isEvent)
+  const event = all.filter((p) => p.isEvent)
 
   const uniqueNumbers = new Set(main.map((p) => p.pokopiaNumber)).size
   const formsCount = main.length - uniqueNumbers

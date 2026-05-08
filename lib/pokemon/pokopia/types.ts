@@ -164,6 +164,19 @@ export interface PokopiaLocation {
   detailUrl: string
 }
 
+/**
+ * Pokemon list 页用的 enriched 形态：在基础 PokopiaPokemon 上拼了
+ * idealHabitat + favorites（来自详情页解析），用来支撑 pokedex 列表的
+ * 多维 filter（specialty + 喜欢东西 + 喜欢栖息地）。
+ *
+ * 数据组装走 lib/serebii/pokopia.ts 的 getPokopiaPokemonListEnriched()，
+ * 内部对每只 pokemon 调一次 getPokopiaPokemonBySlug 走 Next.js 24h fetch cache。
+ */
+export interface PokopiaPokemonListEntry extends PokopiaPokemon {
+  idealHabitat: PokopiaIdealHabitatRef | null
+  favorites: PokopiaFavoriteRef[]
+}
+
 /** Pokopia 图鉴里的一只宝可梦 */
 export interface PokopiaPokemon {
   /**

@@ -8,10 +8,12 @@ import * as cheerio from "cheerio"
 
 import type {
   PokopiaPokemon,
+  PokopiaPokemonListEntry,
   PokopiaSpecialty,
 } from "@/lib/pokemon/pokopia/types"
 import { slugFromSerebiiUrl } from "@/lib/pokemon/pokopia/links"
 import { absolutizeSerebiiUrl, fetchSerebiiHtml } from "./client"
+import { getPokopiaPokemonBySlug } from "./pokopia/pokemon-detail"
 
 const POKOPIA_AVAILABLE_PATH = "/pokemonpokopia/availablepokemon.shtml"
 const POKOPIA_EVENT_PATH = "/pokemonpokopia/eventpokedex.shtml"
@@ -35,6 +37,60 @@ export async function getPokopiaAvailablePokemon(): Promise<PokopiaPokemon[]> {
 export async function getPokopiaEventPokemon(): Promise<PokopiaPokemon[]> {
   const html = await fetchSerebiiHtml(POKOPIA_EVENT_PATH)
   return parsePokopiaAvailableHtml(html).map((p) => ({ ...p, isEvent: true }))
+}
+
+/**
+ * 拿主图鉴 + event 图鉴，并对每只 pokemon 调详情页解析出 idealHabitat + favorites。
+ *
+ * 用于 pokedex list 的多维 filter（specialty / 喜欢的东西 / 喜欢的栖息地）。
+ *
+ * 性能：~312 个详情请求并发分批跑（chunk size 10），命中 Next.js fetch cache
+ * 之后单页都是秒开。冷启动第一次 ~10s 后台跑，对终端用户透明
+ * （Next.js ISR 会用上一份缓存渲染，下一次 revalidate 才用新数据）。
+ *
+ * 失败处理：单只详情解析失败不会影响整体，只是该 pokemon 的 idealHabitat 为 null
+ * 且 favorites 为空，filter 时自然不参与新维度。
+ */
+export async function getPokopiaPokemonListEnriched(): Promise<
+  PokopiaPokemonListEntry[]
+> {
+  const [main, event] = await Promise.all([
+    getPokopiaAvailablePokemon(),
+    getPokopiaEventPokemon(),
+  ])
+  const all = [...main, ...event]
+
+  const enriched = await chunked(all, 10, async (p) => {
+    try {
+      const detail = await getPokopiaPokemonBySlug(p.slug)
+      return {
+        ...p,
+        idealHabitat: detail?.idealHabitat ?? null,
+        favorites: detail?.favorites ?? [],
+      }
+    } catch {
+      return { ...p, idealHabitat: null, favorites: [] }
+    }
+  })
+
+  return enriched
+}
+
+/**
+ * 并发分批跑 fn，每批 size 个，避免对 Serebii 同时打 200+ 个请求。
+ * 跟 habitats/page.tsx 用的同款 helper。
+ */
+async function chunked<T, R>(
+  items: T[],
+  size: number,
+  fn: (item: T) => Promise<R>
+): Promise<R[]> {
+  const result: R[] = []
+  for (let i = 0; i < items.length; i += size) {
+    const batch = items.slice(i, i + size)
+    result.push(...(await Promise.all(batch.map(fn))))
+  }
+  return result
 }
 
 /**

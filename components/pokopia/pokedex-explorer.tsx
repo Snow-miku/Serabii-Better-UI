@@ -20,15 +20,16 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type {
-  PokopiaPokemon,
+  PokopiaEntityRef,
+  PokopiaPokemonListEntry,
   PokopiaSpecialty,
 } from "@/lib/pokemon/pokopia/types"
 
 interface PokopiaPokedexExplorerProps {
-  pokemon: PokopiaPokemon[]
+  pokemon: PokopiaPokemonListEntry[]
 }
 
-type SpecialtyMode = "or" | "and"
+type FilterMode = "or" | "and"
 type SortDirection = "asc" | "desc"
 
 /**
@@ -51,7 +52,12 @@ export function PokopiaPokedexExplorer({
 }: PokopiaPokedexExplorerProps) {
   const [query, setQuery] = React.useState("")
   const [activeSpecialties, setActiveSpecialties] = React.useState<string[]>([])
-  const [specialtyMode, setSpecialtyMode] = React.useState<SpecialtyMode>("or")
+  const [specialtyMode, setSpecialtyMode] = React.useState<FilterMode>("or")
+  const [activeFavorites, setActiveFavorites] = React.useState<string[]>([])
+  const [favoriteMode, setFavoriteMode] = React.useState<FilterMode>("or")
+  const [activeIdealHabitats, setActiveIdealHabitats] = React.useState<string[]>(
+    []
+  )
   const [sortDirection, setSortDirection] = React.useState<SortDirection>("asc")
 
   // 从 pokemon 里抽出去重后的 specialty 列表（用 name 当 key），按字母排序
@@ -63,6 +69,32 @@ export function PokopiaPokedexExplorer({
       }
     }
     return Array.from(byName.values()).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    )
+  }, [pokemon])
+
+  // 从 pokemon 里抽出去重后的 favorites 列表，按字母序
+  const allFavorites = React.useMemo<PokopiaEntityRef[]>(() => {
+    const bySlug = new Map<string, PokopiaEntityRef>()
+    for (const p of pokemon) {
+      for (const f of p.favorites) {
+        if (!bySlug.has(f.slug)) bySlug.set(f.slug, f)
+      }
+    }
+    return Array.from(bySlug.values()).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    )
+  }, [pokemon])
+
+  // 从 pokemon 里抽出去重后的 ideal habitat 列表，按字母序
+  const allIdealHabitats = React.useMemo<PokopiaEntityRef[]>(() => {
+    const bySlug = new Map<string, PokopiaEntityRef>()
+    for (const p of pokemon) {
+      if (p.idealHabitat && !bySlug.has(p.idealHabitat.slug)) {
+        bySlug.set(p.idealHabitat.slug, p.idealHabitat)
+      }
+    }
+    return Array.from(bySlug.values()).sort((a, b) =>
       a.name.localeCompare(b.name)
     )
   }, [pokemon])
@@ -79,6 +111,20 @@ export function PokopiaPokedexExplorer({
           if (!activeSpecialties.every((name) => ownNames.has(name))) return false
         }
       }
+      if (activeFavorites.length > 0) {
+        const ownFavSlugs = new Set(p.favorites.map((f) => f.slug))
+        if (favoriteMode === "or") {
+          if (!activeFavorites.some((slug) => ownFavSlugs.has(slug))) return false
+        } else {
+          if (!activeFavorites.every((slug) => ownFavSlugs.has(slug))) return false
+        }
+      }
+      if (activeIdealHabitats.length > 0) {
+        // 单值字段，OR 语义即可（多选意为"任一即可"）
+        if (!p.idealHabitat || !activeIdealHabitats.includes(p.idealHabitat.slug)) {
+          return false
+        }
+      }
       return true
     })
 
@@ -92,13 +138,25 @@ export function PokopiaPokedexExplorer({
       mainList: sorted.filter((p) => !p.isEvent),
       eventList: sorted.filter((p) => p.isEvent),
     }
-  }, [pokemon, query, activeSpecialties, specialtyMode, sortDirection])
+  }, [
+    pokemon,
+    query,
+    activeSpecialties,
+    specialtyMode,
+    activeFavorites,
+    favoriteMode,
+    activeIdealHabitats,
+    sortDirection,
+  ])
 
   const totalFiltered = mainList.length + eventList.length
 
   // ToggleGroup type="single" 不允许 value 为 ""，需保护避免取消选择
-  const handleModeChange = React.useCallback((value: string) => {
+  const handleSpecialtyModeChange = React.useCallback((value: string) => {
     if (value === "or" || value === "and") setSpecialtyMode(value)
+  }, [])
+  const handleFavoriteModeChange = React.useCallback((value: string) => {
+    if (value === "or" || value === "and") setFavoriteMode(value)
   }, [])
   const handleSortChange = React.useCallback((value: string) => {
     if (value === "asc" || value === "desc") setSortDirection(value)
@@ -128,7 +186,7 @@ export function PokopiaPokedexExplorer({
           <ToggleGroup
             type="single"
             value={specialtyMode}
-            onValueChange={handleModeChange}
+            onValueChange={handleSpecialtyModeChange}
             variant="outline"
             aria-label="Specialty 多选合并方式"
           >
@@ -170,6 +228,76 @@ export function PokopiaPokedexExplorer({
           </ToggleGroup>
         </div>
       </div>
+
+      {/* Favorite 过滤器：喜欢的东西类型（多选 + AND/OR） */}
+      {allFavorites.length > 0 ? (
+        <div className="flex flex-col gap-2">
+          <p className="text-muted-foreground text-xs">
+            Filter by Favorite (多选 · 喜欢的东西)
+          </p>
+          <div className="flex flex-wrap items-start gap-3">
+            <ToggleGroup
+              type="single"
+              value={favoriteMode}
+              onValueChange={handleFavoriteModeChange}
+              variant="outline"
+              aria-label="Favorite 多选合并方式"
+            >
+              <ToggleGroupItem value="or">OR</ToggleGroupItem>
+              <ToggleGroupItem value="and">AND</ToggleGroupItem>
+            </ToggleGroup>
+            <Separator
+              orientation="vertical"
+              className="data-[orientation=vertical]:h-9"
+            />
+            <ToggleGroup
+              type="multiple"
+              value={activeFavorites}
+              onValueChange={setActiveFavorites}
+              variant="outline"
+              className="flex-wrap justify-start gap-1.5"
+            >
+              {allFavorites.map((f) => (
+                <ToggleGroupItem
+                  key={f.slug}
+                  value={f.slug}
+                  aria-label={f.name}
+                  className="gap-1.5"
+                >
+                  {f.name}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Ideal Habitat 过滤器：喜欢的栖息地类型（单值字段所以只 OR） */}
+      {allIdealHabitats.length > 0 ? (
+        <div className="flex flex-col gap-2">
+          <p className="text-muted-foreground text-xs">
+            Filter by Ideal Habitat (多选 · OR · 喜欢的栖息地)
+          </p>
+          <ToggleGroup
+            type="multiple"
+            value={activeIdealHabitats}
+            onValueChange={setActiveIdealHabitats}
+            variant="outline"
+            className="flex-wrap justify-start gap-1.5"
+          >
+            {allIdealHabitats.map((h) => (
+              <ToggleGroupItem
+                key={h.slug}
+                value={h.slug}
+                aria-label={h.name}
+                className="gap-1.5"
+              >
+                {h.name}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </div>
+      ) : null}
 
       {/* 计数 + 排序 */}
       <div className="flex flex-wrap items-center justify-between gap-3">
