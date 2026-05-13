@@ -15,6 +15,7 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -30,7 +31,10 @@ export interface NavGroupSubItem {
 
 export interface NavGroupItem {
   title: string
-  /** 顶级 item URL — 如果是可展开的父项，这个 URL 不会被用（点 trigger 只展开） */
+  /**
+   * 顶级 item URL —— 即使有 children 也会被用：
+   * 文字+图标主区是 <Link>，右侧 chevron 才是 collapsible trigger。
+   */
   url: string
   icon: React.ReactNode
   badge?: string
@@ -91,17 +95,25 @@ function CollapsibleNavItem({ item }: { item: NavGroupItem }) {
       className="group/collapsible"
     >
       <SidebarMenuItem>
-        <CollapsibleTrigger asChild>
-          <SidebarMenuButton tooltip={item.title}>
+        {/* 主区是 Link 去 hub 页；右侧 chevron 是 collapsible trigger */}
+        <SidebarMenuButton asChild tooltip={item.title}>
+          <Link href={item.url}>
             {item.icon}
             <span>{item.title}</span>
-            <span className="ml-auto flex items-center gap-1">
-              {item.badge ? (
-                <Badge variant="secondary">{item.badge}</Badge>
-              ) : null}
-              <ChevronRightIcon className="transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-            </span>
-          </SidebarMenuButton>
+            {item.badge ? (
+              <Badge variant="secondary" className="ml-auto">
+                {item.badge}
+              </Badge>
+            ) : null}
+          </Link>
+        </SidebarMenuButton>
+        <CollapsibleTrigger asChild>
+          <SidebarMenuAction
+            aria-label={`${item.title} 子菜单`}
+            className="group-data-[state=open]/collapsible:rotate-90"
+          >
+            <ChevronRightIcon className="transition-transform duration-200" />
+          </SidebarMenuAction>
         </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarMenuSub>
